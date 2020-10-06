@@ -1,25 +1,28 @@
 ---
-- name: Install nginx
-  hosts: host.name.ip
-  become: true
+- name: update web servers
+  hosts: webservers
+  remote_user: root
 
   tasks:
-  - name: Add epel-release repo
+  - name: ensure apache is at the latest version
     yum:
-      name: epel-release
-      state: present
-
-  - name: Install nginx
-    yum:
-      name: nginx
-      state: present
-
-  - name: Insert Index Page
+      name: httpd
+      state: latest
+  - name: write the apache config file
     template:
-      src: index.html
-      dest: /usr/share/nginx/html/index.html
+      src: /srv/httpd.j2
+      dest: /etc/httpd.conf
 
-  - name: Start NGiNX
+- name: update db servers
+  hosts: databases
+  remote_user: root
+
+  tasks:
+  - name: ensure postgresql is at the latest version
+    yum:
+      name: postgresql
+      state: latest
+  - name: ensure that postgresql is started
     service:
-      name: nginx
+      name: postgresql
       state: started
